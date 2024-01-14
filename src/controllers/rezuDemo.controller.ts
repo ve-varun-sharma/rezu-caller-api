@@ -4,10 +4,11 @@ import { sendSMS } from "../helpers/twilio.helpers";
 
 export async function rezuDemoInbound(body: any) {
   console.log("Inbound call Received!");
-  if (typeof body === "object") {
-    const call_id = body?.call_id;
-    if (!call_id) {
-      console.log("No Call ID");
+
+  try {
+    const callId = body?.call_id;
+    if (!callId) {
+      console.log("No call_id");
       return {
         success: false,
         error: "Invalid request body - missing call_id",
@@ -24,16 +25,13 @@ export async function rezuDemoInbound(body: any) {
       };
     }
 
-    console.log(body);
-
     const summarizedCall = await summarizeCall(transcript);
 
     function checkStringForApology(str: string): boolean {
-      const regex = /I'm sorry/i;
+      const regex =
+        /I cannot summarize the transcript due to missing information./i;
       return !regex.test(str);
     }
-
-    checkStringForApology("hello there");
 
     const validatedSummmarization = checkStringForApology(summarizedCall);
     if (!validatedSummmarization) {
@@ -42,22 +40,47 @@ export async function rezuDemoInbound(body: any) {
 
       return { success: false, error: "Could not summarize the call" };
     }
-    const parsedTranscript = await parseTrancript(summarizedCall);
 
-    const callData = await getCallData(call_id);
+    console.log("Valid Summarization");
+    const parsedTranscript = await parseTrancript(summarizedCall);
+    console.log("parsedTranscript");
+    console.log(parsedTranscript);
+
+    console.log("Getting call data via Bland.AI");
+    console.log(callId);
+    const callData = await getCallData(callId);
+    console.log("callData");
     const userNumber = callData?.from as string;
 
-    const message = `Hey, ${parsedTranscript.fullName} thanks for making a reservation with the Flying Pig! 🐷
-    We look forward to seeing you at ${parsedTranscript.reservationDate}  for your party 🎉 of ${parsedTranscript.guests}`;
-    console.log("Creating booking");
+    const message = `Hey, ${
+      parsedTranscript.fullName ? parsedTranscript.fullName : "there"
+    } thanks for making a reservation with the Flying Pig! 🐷
+    We look forward to seeing you at ${
+      parsedTranscript.reservationDate
+        ? parsedTranscript.reservationDate
+        : "Februrary 5th, at 7 PM"
+    }  for your party 🎉 of ${
+      parsedTranscript.guests ? parsedTranscript.guests : 2
+    }`;
 
-    sendSMS(message, userNumber);
+    console.log(message);
+    await sendSMS(message, userNumber);
+
+    function wait() {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          resolve("Waited for 2 seconds");
+          const rezuDemoMessage = `Enjoyed our demo? Elevate 🚀 your restaurant with Rezu! Click https://rezu.softr.app for seamless reservations.  📲 Say goodbye to missed opportunities!`;
+          sendSMS(rezuDemoMessage, userNumber);
+        }, 5000); // 2000 milliseconds = 2 seconds
+      });
+    }
+    wait();
 
     console.log("Done");
-
     return { success: true };
-  } else {
-    console.error("Failed");
-    return { success: false, error: "Invalid request body" };
+  } catch (error) {
+    return { success: false, error: `Invalid request body. Error: ${error}` };
+  } finally {
   }
 }

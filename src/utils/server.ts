@@ -17,22 +17,24 @@ export const app = new Elysia()
       },
     })
   )
+  .group("/tests", (app) =>
+    app
+      .get("/hello", () => "Hello Bun.js!")
+      .get("/sanity-check", () => "sanity checked!")
+      .post("/parrot", ({ body }: { body: any }) => {
+        const mimicry = body;
+        return { success: true, mimicry };
+      })
+  )
   .group("/v1", (app) =>
     // Can use as many nested groups as desired
     app
       .get("/", () => "Using v1")
-      .group("/tests", (app) =>
-        app
-          .get("/hello", () => "Hello Bun.js!")
-          .get("/sanity-check", () => "sanity checked!")
-          .post("/parrot", ({ body }: { body: any }) => {
-            const mimicry = body;
-            return { success: true, mimicry };
-          })
-      )
+
       .group("/demo", (app) =>
-        app.post("/rezu-landing-page-inbound", async ({ body }) =>
-          rezuDemoInbound(body)
-        )
+        app.post("/rezu-landing-page-inbound", async ({ body }) => {
+          console.log(body);
+          rezuDemoInbound(body);
+        })
       )
   );

@@ -10,10 +10,10 @@ const client = twilio(accountSid, authToken);
 
 // Function to send an SMS
 export async function sendSMS(content: string, toNumber: string) {
-  console.log("Sending text");
+  console.log("Sending SMS");
   try {
     const message = await client.messages.create({
-      body: "Hello from Twilio!",
+      body: content,
       from: twilioNumber,
       to: toNumber,
     });

@@ -25,7 +25,7 @@ export async function summarizeCall(
       .join("\n");
 
     // Prepare the prompt for GPT
-    const prompt = `Summarize all the appointment/reservation information. Parse the specific start time, end time, the number of guests for the reservation and the full name of the participant from this transcript:\n\n${dialogue}`;
+    const prompt = `Summarize all the appointment/reservation information. Parse the specific start time, end time, the number of guests for the reservation and the full name of the participant from the included transcript. If you cannot summarize the transcript due to missing information say: Cannot summarize transcript' Transcript:\n\n${dialogue} \n\nI`;
 
     const completion = await openai.chat.completions.create({
       messages: [
