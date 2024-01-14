@@ -1,7 +1,7 @@
 import { summarizeCall, parseTrancript } from "../helpers/openai.helpers";
 import { getCallData } from "../helpers/blandAi.helpers";
 import { sendSMS } from "../helpers/twilio.helpers";
-
+import { createDemoCallDocument } from "../helpers/firestore.helpers";
 export async function rezuDemoInbound(body: any) {
   console.log("Inbound call Received!");
 
@@ -66,13 +66,24 @@ export async function rezuDemoInbound(body: any) {
     console.log(message);
     await sendSMS(message, userNumber);
 
+    const demoCallDocumentData = {
+      callId: callData.c_id,
+      toNumber: callData.to,
+      fromNumber: callData.from,
+      completed: callData.completed,
+      created_at: callData.created_at,
+      inbound: callData.inbound,
+      concatenated_transcript: callData.concatenated_transcript,
+    };
+    await createDemoCallDocument(demoCallDocumentData);
+
     function wait() {
       return new Promise((resolve) => {
-        setTimeout(() => {
+        setTimeout(async () => {
           resolve("Waited for 2 seconds");
           const rezuDemoMessage = `Enjoyed our demo? Elevate 🚀 your restaurant with Rezu! Click https://rezu.softr.app for seamless reservations.  📲 Say goodbye to missed opportunities!`;
-          sendSMS(rezuDemoMessage, userNumber);
-        }, 5000); // 2000 milliseconds = 2 seconds
+          await sendSMS(rezuDemoMessage, userNumber);
+        }, 7000); // 2000 milliseconds = 2 seconds
       });
     }
     wait();
