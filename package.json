@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@elysiajs/swagger": "^0.8.3",
+    "@types/node": "^20.11.0",
     "elysia": "^0.8.9",
-    "langchain": "^0.1.2"
+    "langchain": "^0.1.2",
+    "twilio": "^5.0.0-rc.1"
   }
 }
